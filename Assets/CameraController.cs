@@ -16,7 +16,8 @@ public class CameraController : MonoBehaviour
 
     public void DoUpdate()
     {
-        if(Input.GetKeyDown(KeyCode.R)) {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
             SetTargetRotation();
         }
 

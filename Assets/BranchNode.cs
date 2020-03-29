@@ -4,31 +4,28 @@ using UnityEngine;
 
 public class BranchNode : MonoBehaviour
 {
-    public Branch branch_prefab;
+    // public Branch branch_prefab;
 
-    Vector3 node_position;
+    // Vector3 node_position;
     Branch parent_branch;
     Branch child_branch;
-    float spawn_percent;
 
-    public void SpawnBranch()
+    public void DoUpdate()
     {
-        if (child_branch == null)
+        if (child_branch != null)
         {
-            child_branch = Instantiate(branch_prefab);
-            child_branch.SetOrigin(this, parent_branch.direction, ChooseRandomBranchDirection());
+            child_branch.DoUpdate();
         }
     }
 
-    public void SetNodeBranch(Branch b)
+    public void SetParentBranch(Branch b)
     {
         parent_branch = b;
     }
 
-    Vector3 ChooseRandomBranchDirection()
+    public void SetChildBranch(Branch branch)
     {
-        List<Vector3> directions = parent_branch.GetDirectionList();
-        return (directions[Random.Range(0, directions.Count)]);
+        child_branch = branch;
     }
 
     public void HandleParentBranchRemoved()
@@ -38,5 +35,10 @@ public class BranchNode : MonoBehaviour
             child_branch.KillBranch();
         }
         Destroy(gameObject);
+    }
+
+    public bool HasParent()
+    {
+        return parent_branch != null;
     }
 }

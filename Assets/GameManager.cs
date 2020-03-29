@@ -5,7 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public List<Branch> branches;
-    public List<Knob> knobs;
+    public List<BranchKnob> knobs;
     public CameraController cam;
 
     Vector2 screen_mouse_down;
@@ -15,9 +15,26 @@ public class GameManager : MonoBehaviour
     public enum Selection { Branch, Knob, None }
     public Selection selection = Selection.None;
 
-    Knob selected_knob;
+    BranchKnob selected_knob;
 
     public static Vector3 tree_origin;
+
+    private static GameManager instance;
+    public static GameManager GetInstance() {
+        return instance;
+    }
+
+    void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     void Start()
     {
@@ -38,7 +55,7 @@ public class GameManager : MonoBehaviour
             b.DoUpdate();
         }
 
-        foreach (Knob k in knobs)
+        foreach (BranchKnob k in knobs)
         {
             k.DoUpdate();
         }
@@ -90,10 +107,10 @@ public class GameManager : MonoBehaviour
 
         if (Physics.Raycast(ray.origin, ray.direction, out hit, 40, layer))
         {
-            if (hit.collider.GetComponent<Knob>() != null)
+            if (hit.collider.GetComponent<BranchKnob>() != null)
             {
                 selection = Selection.Knob;
-                selected_knob = hit.collider.GetComponent<Knob>();
+                selected_knob = hit.collider.GetComponent<BranchKnob>();
             }
         }
         else
@@ -118,6 +135,9 @@ public class GameManager : MonoBehaviour
     {
         screen_mouse_current = Input.mousePosition;
         screen_mouse_delta = (screen_mouse_current - screen_mouse_down) / (Screen.width / 2);
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Debug.DrawRay(ray.origin, ray.direction, Color.red);
 
         switch (selection)
         {

@@ -6,23 +6,28 @@ public class Branch : MonoBehaviour
 {
     public BranchNode branch_node_prefab;
     public float branch_length;
-    // public Vector3 tree_origin;
     public Vector3 direction;
     public float min_branch_length;
 
-    List<BranchNode> child_nodes = new List<BranchNode>();
     BranchNode origin_node;
-    Transform graphics;
-    int node_count = 3;
+    BranchKnob knob;
 
-    void Awake()
-    {
-        InitBranch();
-    }
+    List<BranchNode> child_nodes = new List<BranchNode>();
+    Transform graphics;
+    int node_count = 1;
+
+    public Branch branch_prefab;
+
+    // void Awake()
+    // {
+
+    // }
 
     void Start()
     {
+        InitBranch();
         InitNodes();
+        InitKnob();
         SetNodePositions();
     }
 
@@ -30,44 +35,66 @@ public class Branch : MonoBehaviour
     {
         UpdateBranch();
         SetNodePositions();
+        UpdateNodes();
+
+        direction = graphics.forward;
     }
 
     void InitBranch()
     {
         branch_length = transform.localScale.z;
         graphics = transform.Find("GFX");
-        direction = graphics.forward;
+    }
+
+    void InitKnob() {
+        knob = GetComponentInChildren<BranchKnob>();
+        knob.InitKnob();
     }
 
     public void SpawnBranch()
     {
-        foreach (BranchNode n in child_nodes)
+        foreach (BranchNode node in child_nodes)
         {
-            n.SpawnBranch();
+            Branch new_branch = Instantiate(branch_prefab);
+            new_branch.SetOrigin(node, direction, ChooseRandomBranchDirection());
+            node.SetChildBranch(new_branch);
         }
     }
 
     void InitNodes()
     {
+        Debug.Log("Initting branch");
+
         Transform node_parent = transform.Find("Nodes");
         if (!node_parent.gameObject.activeSelf) { return; }
 
         for (int i = 0; i < node_count; i++)
         {
+            Debug.Log(node_count);
             BranchNode n = Instantiate(branch_node_prefab);
-            n.SetNodeBranch(this);
+            n.SetParentBranch(this);
+
             child_nodes.Add(n);
-            n.transform.SetParent(node_parent);
+
+            // n.transform.SetParent(node_parent);
         }
     }
 
     void SetNodePositions()
     {
-        float node_spread_distance = (branch_length / (node_count + 1)) * 2;
+        float node_spread_distance = branch_length / (node_count + 1);
 
         for (int i = 0; i < child_nodes.Count; i++)
         {
-            child_nodes[i].transform.position = transform.position + direction * branch_length / 2 + direction.normalized * node_spread_distance * i;
+            child_nodes[i].transform.position = transform.position + direction * branch_length / 2 + direction.normalized * node_spread_distance * (i + 1);
+        }
+    }
+
+    void UpdateNodes()
+    {
+        foreach (BranchNode n in child_nodes)
+        {
+            n.DoUpdate();
         }
     }
 
@@ -91,13 +118,13 @@ public class Branch : MonoBehaviour
     {
         if (origin_node == null) { return; }
         transform.position = origin_node.transform.position;
+
     }
 
-    public List<Vector3> GetDirectionList()
+    Vector3 ChooseRandomBranchDirection()
     {
         List<Vector3> directions = new List<Vector3>() { graphics.transform.up, -graphics.transform.up };
-
-        return directions;
+        return (directions[Random.Range(0, directions.Count)]);
     }
 
     public void KillBranch()
@@ -107,5 +134,18 @@ public class Branch : MonoBehaviour
             n.HandleParentBranchRemoved();
         }
         Destroy(gameObject);
+    }
+
+    public bool HasParent()
+    {
+
+        if (origin_node != null)
+        {
+            return origin_node.HasParent();
+        }
+        else
+        {
+            return false;
+        }
     }
 }
