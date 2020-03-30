@@ -4,25 +4,23 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public List<Branch> branches;
-    public List<BranchKnob> knobs;
-    public CameraController cam;
-
-    Vector2 screen_mouse_down;
-    Vector2 screen_mouse_current;
-    public Vector2 screen_mouse_delta;
-
-    public enum Selection { Branch, Knob, None }
-    public Selection selection = Selection.None;
-
-    BranchKnob selected_knob;
-
-    public static Vector3 tree_origin;
-
     private static GameManager instance;
-    public static GameManager GetInstance() {
+    public static GameManager GetInstance()
+    {
         return instance;
     }
+
+    public CameraController cam;
+    public List<BranchNode> nodes = new List<BranchNode>();
+
+    Vector3 screen_mouse_down;
+    Vector3 screen_mouse_current;
+    Vector3 screen_mouse_delta;
+
+    public enum Selection { None, Knob };
+    public Selection selection;
+
+    BranchKnob selected_knob;
 
     void Awake()
     {
@@ -32,33 +30,24 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Destroy(gameObject);
+            if (this != instance)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 
+    // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("Set tree origin!");
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Input
         HandleInput();
-
-        // Updates
-        cam.DoUpdate();
-
-        foreach (Branch b in branches)
-        {
-            b.DoUpdate();
-        }
-
-        foreach (BranchKnob k in knobs)
-        {
-            k.DoUpdate();
-        }
+        UpdateObjects();
     }
 
     void HandleInput()
@@ -85,11 +74,34 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            foreach (Branch b in branches)
-            {
-                b.SpawnBranch();
-            }
+            HandleSpace();
         }
+
+        // if (Input.GetKeyDown(KeyCode.Space))
+        // {
+        //     foreach (Branch b in branches)
+        //     {
+        //         b.SpawnChildBranch();
+        //     }
+        // }
+
+        // if (Input.GetKeyDown(KeyCode.Space))
+        // {
+        //     foreach (Branch b in branches)
+        //     {
+        //         b.SpawnBranch();
+        //     }
+        // }
+    }
+
+    void UpdateObjects()
+    {
+        foreach (BranchNode n in nodes)
+        {
+            n.DoUpdate();
+        }
+
+        cam.DoUpdate();
     }
 
     void HandleMouseUnpressed()
@@ -103,8 +115,8 @@ public class GameManager : MonoBehaviour
 
         RaycastHit hit;
         screen_mouse_down = Input.mousePosition;
-        int layer = 1 << LayerMask.NameToLayer("Knob");
 
+        int layer = 1 << LayerMask.NameToLayer("Knob");
         if (Physics.Raycast(ray.origin, ray.direction, out hit, 40, layer))
         {
             if (hit.collider.GetComponent<BranchKnob>() != null)
@@ -122,8 +134,6 @@ public class GameManager : MonoBehaviour
         {
             case Selection.Knob:
                 selected_knob.HandleMouseDown();
-                break;
-            case Selection.Branch:
                 break;
             case Selection.None:
                 cam.HandleMouseDown();
@@ -144,8 +154,6 @@ public class GameManager : MonoBehaviour
             case Selection.Knob:
                 selected_knob.HandleMouseHeld();
                 break;
-            case Selection.Branch:
-                break;
             case Selection.None:
                 cam.HandleMouseHeld(screen_mouse_delta);
                 break;
@@ -160,12 +168,32 @@ public class GameManager : MonoBehaviour
                 selected_knob.HandleMouseUp();
                 selected_knob = null;
                 break;
-            case Selection.Branch:
-                break;
             case Selection.None:
                 break;
         }
 
         screen_mouse_down = Vector2.zero;
+    }
+
+    void HandleSpace()
+    {
+        SpawnBranches();
+    }
+
+    void SpawnBranches()
+    {
+        BranchNode[] current_node_list = new BranchNode[nodes.Count];
+
+        nodes.CopyTo(current_node_list);
+        
+        foreach (BranchNode n in current_node_list)
+        {
+            n.SpawnBranch();
+        }
+    }
+
+    public void HandleNodeAdded(BranchNode new_node)
+    {
+        nodes.Add(new_node);
     }
 }

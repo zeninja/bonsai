@@ -8,9 +8,10 @@ public class CameraController : MonoBehaviour
     Vector2 mouse_last_pos;
 
     public float rot_speed = 15f;
-    float rotation_rate;
-
     public float auto_rot_speed = 200f;
+
+
+    float rotation_rate;
 
     Quaternion target_rotation;
 
@@ -33,7 +34,6 @@ public class CameraController : MonoBehaviour
     public void HandleMouseHeld(Vector2 delta)
     {
         rotation_rate += delta.x * rot_speed * Time.deltaTime;
-        // mouse_last_pos = mouse_curr_pos;
     }
 
     public void HandleMouseUnpressed()
