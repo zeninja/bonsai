@@ -36,7 +36,7 @@ public class BranchNode : MonoBehaviour
         parent_branch = branch;
     }
 
-    bool HasParent()
+    public bool HasParent()
     {
         return parent_branch != null;
     }
@@ -47,6 +47,7 @@ public class BranchNode : MonoBehaviour
         {
             child_branch.KillBranch();
         }
+        GameManager.GetInstance().HandleNodeRemoved(this);
         Destroy(gameObject);
     }
 }

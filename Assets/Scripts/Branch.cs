@@ -11,13 +11,18 @@ public class Branch : MonoBehaviour
     public Vector3 origin;
     public Vector3 direction;
     public float length;
+    Vector3 extent;
 
     float min_length = 2;
+    float max_length = 15f;
 
     public BranchNode node_prefab;
     List<BranchNode> child_nodes = new List<BranchNode>();
     int node_count = 1;
 
+
+
+    #region start
     public void OnCreated(BranchNode node, Vector3 new_direction, Vector3 old_direction)
     {
         origin_node = node;
@@ -36,31 +41,34 @@ public class Branch : MonoBehaviour
         for (int i = 0; i < node_count; i++)
         {
             BranchNode new_node = Instantiate(node_prefab);
+
             child_nodes.Add(new_node);
-
             new_node.SetParentBranch(this);
-
             GameManager.GetInstance().HandleNodeAdded(new_node);
         }
     }
+    #endregion
 
     public void DoUpdate()
     {
         SetPosition();
         SetNodePositions();
         SetKnobPosition();
-
-        // FindMyPlane();
     }
 
+
+    // Branch
+    // [external]
     public void SetLength(float new_length)
     {
+
         length = new_length;
-        length = Mathf.Max(length, min_length);
+        length = Mathf.Clamp(length, min_length, max_length);
 
         gfx.transform.localScale = new Vector3(1, 1, length / 2);
     }
 
+    // [internal]
     void SetPosition()
     {
         origin = origin_node.transform.position;
@@ -72,6 +80,8 @@ public class Branch : MonoBehaviour
         gfx.transform.rotation = Quaternion.LookRotation(direction, old);
     }
 
+
+    // Nodes
     void SetNodePositions()
     {
         float node_spread_distance = length / (node_count + 1);
@@ -84,11 +94,16 @@ public class Branch : MonoBehaviour
         }
     }
 
+
+    // Knob
     void SetKnobPosition()
     {
         knob.transform.position = origin + direction * length;
+        knob.DoUpdate();
     }
 
+
+    // Children and cleanup
     public Vector3 GetRandomDirection()
     {
         List<Vector3> directions = new List<Vector3>() { gfx.transform.up, -gfx.transform.up };
@@ -106,4 +121,18 @@ public class Branch : MonoBehaviour
         }
         Destroy(gameObject);
     }
+
+
+    // external info
+    public Vector3 GetExtent()
+    {
+        extent = origin + direction * length;
+        return extent;
+    }
+
+    public bool HasParent()
+    {
+        return origin_node.HasParent();
+    }
+
 }

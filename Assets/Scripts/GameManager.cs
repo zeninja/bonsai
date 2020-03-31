@@ -13,12 +13,18 @@ public class GameManager : MonoBehaviour
     public CameraController cam;
     public List<BranchNode> nodes = new List<BranchNode>();
 
-    Vector3 screen_mouse_down;
-    Vector3 screen_mouse_current;
-    Vector3 screen_mouse_delta;
-
     public enum Selection { None, Knob };
     public Selection selection;
+
+
+    class InputData
+    {
+        public Vector3 screen_mouse_down;
+        public Vector3 screen_mouse_current;
+        public Vector3 screen_mouse_delta;
+    }
+    InputData input = new InputData();
+
 
     BranchKnob selected_knob;
 
@@ -37,19 +43,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
+    // This is the only update used in the game
     void Update()
     {
         HandleInput();
         UpdateObjects();
     }
 
+    #region input
     void HandleInput()
     {
         if (!Input.GetMouseButton(0))
@@ -76,32 +77,6 @@ public class GameManager : MonoBehaviour
         {
             HandleSpace();
         }
-
-        // if (Input.GetKeyDown(KeyCode.Space))
-        // {
-        //     foreach (Branch b in branches)
-        //     {
-        //         b.SpawnChildBranch();
-        //     }
-        // }
-
-        // if (Input.GetKeyDown(KeyCode.Space))
-        // {
-        //     foreach (Branch b in branches)
-        //     {
-        //         b.SpawnBranch();
-        //     }
-        // }
-    }
-
-    void UpdateObjects()
-    {
-        foreach (BranchNode n in nodes)
-        {
-            n.DoUpdate();
-        }
-
-        cam.DoUpdate();
     }
 
     void HandleMouseUnpressed()
@@ -109,12 +84,12 @@ public class GameManager : MonoBehaviour
         cam.HandleMouseUnpressed();
     }
 
-    public void HandleMouseDown()
+    void HandleMouseDown()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
         RaycastHit hit;
-        screen_mouse_down = Input.mousePosition;
+        input.screen_mouse_down = Input.mousePosition;
 
         int layer = 1 << LayerMask.NameToLayer("Knob");
         if (Physics.Raycast(ray.origin, ray.direction, out hit, 40, layer))
@@ -143,8 +118,8 @@ public class GameManager : MonoBehaviour
 
     void HandleMouseHeld()
     {
-        screen_mouse_current = Input.mousePosition;
-        screen_mouse_delta = (screen_mouse_current - screen_mouse_down) / (Screen.width / 2);
+        input.screen_mouse_current = Input.mousePosition;
+        input.screen_mouse_delta = (input.screen_mouse_current - input.screen_mouse_down) / (Screen.width / 2);
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         Debug.DrawRay(ray.origin, ray.direction, Color.red);
@@ -155,7 +130,7 @@ public class GameManager : MonoBehaviour
                 selected_knob.HandleMouseHeld();
                 break;
             case Selection.None:
-                cam.HandleMouseHeld(screen_mouse_delta);
+                cam.HandleMouseHeld(input.screen_mouse_delta);
                 break;
         }
     }
@@ -172,12 +147,24 @@ public class GameManager : MonoBehaviour
                 break;
         }
 
-        screen_mouse_down = Vector2.zero;
+        input.screen_mouse_down = Vector2.zero;
     }
 
     void HandleSpace()
     {
         SpawnBranches();
+    }
+    #endregion
+
+    #region functions
+    void UpdateObjects()
+    {
+        foreach (BranchNode n in nodes)
+        {
+            n.DoUpdate();
+        }
+
+        cam.DoUpdate();
     }
 
     void SpawnBranches()
@@ -185,7 +172,7 @@ public class GameManager : MonoBehaviour
         BranchNode[] current_node_list = new BranchNode[nodes.Count];
 
         nodes.CopyTo(current_node_list);
-        
+
         foreach (BranchNode n in current_node_list)
         {
             n.SpawnBranch();
@@ -196,4 +183,10 @@ public class GameManager : MonoBehaviour
     {
         nodes.Add(new_node);
     }
+
+    public void HandleNodeRemoved(BranchNode removed)
+    {
+        nodes.Remove(removed);
+    }
+    #endregion
 }

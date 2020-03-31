@@ -189,6 +189,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   my_branch: {fileID: 468198394654822208}
   selected: 0
+  selected_color: {r: 0.09803921, g: 1, b: 0.32646906, a: 1}
+  deselected_color: {r: 0, g: 0.3679245, b: 0.24381329, a: 1}
 --- !u!1 &468198395335263134
 GameObject:
   m_ObjectHideFlags: 0

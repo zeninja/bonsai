@@ -10,6 +10,7 @@ public class CameraController : MonoBehaviour
     public float rot_speed = 15f;
     public float auto_rot_speed = 200f;
 
+    // float max_rotation_rate;
 
     float rotation_rate;
 
@@ -44,5 +45,10 @@ public class CameraController : MonoBehaviour
     public void SetTargetRotation()
     {
         target_rotation = Quaternion.Euler(0, Random.Range(-360, 360), 0);
+    }
+
+    public void SetCameraSize(float size)
+    {
+        Camera.main.orthographicSize = size;
     }
 }
