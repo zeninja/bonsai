@@ -64,7 +64,6 @@ public class BranchKnob : MonoBehaviour
                 // Plane is drawn from Knob - Branch Origin - Tree Origin
 
                 Ray cam_ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                // Debug.DrawRay(cam_ray.origin, cam_ray.direction * 40, Color.cyan, .5f);
                 UpdatePlane();
 
                 Vector3 plane_point = Vector3.zero;
@@ -73,14 +72,9 @@ public class BranchKnob : MonoBehaviour
                 if (branch_plane.Raycast(cam_ray, out enter))
                 {
                     plane_point = cam_ray.GetPoint(enter);
-                    Debug.Log("hit plane");
                 }
-                DrawPlane(transform.position, branch_plane.normal, 1000f);
-
-                // Vector3 plane_vector = plane_point - my_branch.origin;
 
                 // Get closest point on the line extending from branch origin in branch direction
-                // Vector3 projected_pos = Vector3.Project(plane_point, my_branch.origin + my_branch.direction);
                 Vector3 projected_pos = FindNearestPointOnLine(my_branch.origin, my_branch.direction, plane_point);
 
                 final_point = projected_pos;
@@ -98,8 +92,6 @@ public class BranchKnob : MonoBehaviour
             #endregion
         }
     }
-    // Vector3 knob_pos = Vector3.ProjectOnPlane(mouse_pos, branch_plane.normal);
-
 
 
     public void HandleMouseUp()

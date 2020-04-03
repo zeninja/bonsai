@@ -4,18 +4,26 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    private static GameManager instance;
-    public static GameManager GetInstance()
-    {
-        return instance;
-    }
 
-    public CameraController cam;
-    public List<BranchNode> nodes = new List<BranchNode>();
+    // other classes
+    // public class TreeInfo
+    // {
+    //     public Vector3 origin;
+    //     public Extents extents = new Extents();
+    // }
 
-    public enum Selection { None, Knob };
-    public Selection selection;
+    // public class Extents
+    // {
+    //     public float top;
+    //     public float bottom;
+    //     public float left;
+    //     public float right;
 
+    //     public void GetExtents()
+    //     {
+
+    //     }
+    // }
 
     class InputData
     {
@@ -23,10 +31,29 @@ public class GameManager : MonoBehaviour
         public Vector3 screen_mouse_current;
         public Vector3 screen_mouse_delta;
     }
+
+
+    // variables
+    private static GameManager instance;
+    public static GameManager GetInstance()
+    {
+        return instance;
+    }
+
+    public UIManager ui;
+    public CameraController cam;
+    public List<BranchNode> nodes = new List<BranchNode>();
+    public List<Branch> branches  = new List<Branch>();
+
+    public enum Selection { None, Knob };
+    public Selection selection;
+
+    public CameraControl zoom_control;
+
     InputData input = new InputData();
-
-
     BranchKnob selected_knob;
+
+
 
     void Awake()
     {
@@ -77,6 +104,11 @@ public class GameManager : MonoBehaviour
         {
             HandleSpace();
         }
+
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            HandleGrow();
+        }
     }
 
     void HandleMouseUnpressed()
@@ -109,6 +141,7 @@ public class GameManager : MonoBehaviour
         {
             case Selection.Knob:
                 selected_knob.HandleMouseDown();
+                ui.HandleMouseDown();
                 break;
             case Selection.None:
                 cam.HandleMouseDown();
@@ -128,6 +161,7 @@ public class GameManager : MonoBehaviour
         {
             case Selection.Knob:
                 selected_knob.HandleMouseHeld();
+                ui.HandleMouseHeld();
                 break;
             case Selection.None:
                 cam.HandleMouseHeld(input.screen_mouse_delta);
@@ -140,6 +174,7 @@ public class GameManager : MonoBehaviour
         switch (selection)
         {
             case Selection.Knob:
+                ui.HandleMouseUp();
                 selected_knob.HandleMouseUp();
                 selected_knob = null;
                 break;
@@ -153,6 +188,16 @@ public class GameManager : MonoBehaviour
     void HandleSpace()
     {
         SpawnBranches();
+    }
+
+    void HandleGrow()
+    {
+        GrowAllBranches();
+    }
+
+    void HandleShrink()
+    {
+        ShrinkAllBranches();
     }
     #endregion
 
@@ -189,4 +234,37 @@ public class GameManager : MonoBehaviour
         nodes.Remove(removed);
     }
     #endregion
+
+
+    void GrowAllBranches()
+    {
+        float grow_speed = 1;
+
+        foreach ( Branch b in branches )
+        {
+            b.Grow(grow_speed);
+        }
+    }
+
+    void ShrinkAllBranches()
+    {
+        float shrink_speed = 1 * -1f;
+
+        foreach ( Branch b in branches )
+        {
+            b.Grow(shrink_speed);
+        }
+    }
+
+
+    public void HandleBranchAdded(Branch new_branch)
+    {
+        branches.Add(new_branch);
+    }
+
+    public void HandleBranchRemoved(Branch removed)
+    {
+        branches.Remove(removed);
+    }
+
 }
